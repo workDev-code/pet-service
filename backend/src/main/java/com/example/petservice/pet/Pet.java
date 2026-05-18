@@ -1,5 +1,6 @@
 package com.example.petservice.pet;
 
+import com.example.petservice.common.AuditableEntity;
 import com.example.petservice.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,12 +14,16 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "pets")
-public class Pet {
+@SQLDelete(sql = "update pets set deleted_at = now(), updated_at = now() where id = ?")
+@Where(clause = "deleted_at is null")
+public class Pet extends AuditableEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

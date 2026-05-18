@@ -9,7 +9,7 @@ import com.example.petservice.common.NotFoundException;
 import com.example.petservice.user.Role;
 import com.example.petservice.user.User;
 import com.example.petservice.user.UserRepository;
-import java.time.OffsetDateTime;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +40,6 @@ public class AuthService {
     user.setEmail(request.email().toLowerCase());
     user.setPasswordHash(passwordEncoder.encode(request.password()));
     user.setRole(request.role());
-    user.setCreatedAt(OffsetDateTime.now());
     users.save(user);
 
     return new AuthResponse(jwtService.generateToken(user), toResponse(user));
@@ -49,9 +48,9 @@ public class AuthService {
   @Transactional(readOnly = true)
   public AuthResponse login(LoginRequest request) {
     User user = users.findByEmail(request.email().toLowerCase())
-        .orElseThrow(() -> new BadRequestException("Invalid email or password"));
+        .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-      throw new BadRequestException("Invalid email or password");
+      throw new BadCredentialsException("Invalid email or password");
     }
     return new AuthResponse(jwtService.generateToken(user), toResponse(user));
   }

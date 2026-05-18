@@ -1,6 +1,7 @@
 package com.example.petservice.common;
 
 import java.util.List;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +28,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BadRequestException.class)
   ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
     return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  ResponseEntity<ApiError> handleUnauthorized(AuthenticationException ex) {
+    return build(HttpStatus.UNAUTHORIZED, "Invalid email or password");
   }
 
   @ExceptionHandler({

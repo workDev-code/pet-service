@@ -1,5 +1,6 @@
 package com.example.petservice.booking;
 
+import com.example.petservice.common.AuditableEntity;
 import com.example.petservice.pet.Pet;
 import com.example.petservice.servicecatalog.ServiceCatalog;
 import com.example.petservice.user.User;
@@ -17,12 +18,16 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "bookings")
-public class Booking {
+@SQLDelete(sql = "update bookings set deleted_at = now(), updated_at = now() where id = ?")
+@Where(clause = "deleted_at is null")
+public class Booking extends AuditableEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -55,10 +60,4 @@ public class Booking {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private BookingStatus status;
-
-  @Column(nullable = false)
-  private OffsetDateTime createdAt;
-
-  @Column(nullable = false)
-  private OffsetDateTime updatedAt;
 }
