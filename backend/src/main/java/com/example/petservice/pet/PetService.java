@@ -72,11 +72,18 @@ public class PetService {
   public void delete(CurrentUser currentUser, Long id) {
     requireCustomer(currentUser);
     Pet pet = findOwnedPet(currentUser, id);
-    if (bookings.existsByPetId(id)) {
-      throw new BadRequestException("Cannot delete a pet that already has bookings");
+    boolean hasBookingHistory = bookings.existsByPetId(id);
+    String photoUrl = pet.getPhotoUrl();
+    if (hasBookingHistory) {
+      pets.delete(pet);
+      photoStorage.delete(photoUrl);
+      return;
     }
-    photoStorage.delete(pet.getPhotoUrl());
-    pets.delete(pet);
+    int deletedRows = pets.hardDeleteByIdWithoutBookings(id);
+    if (deletedRows == 0) {
+      throw new BadRequestException("Cannot hard delete a pet that already has bookings");
+    }
+    photoStorage.delete(photoUrl);
   }
 
   @Transactional

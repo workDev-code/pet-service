@@ -4,6 +4,8 @@ import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import { RoleGuard } from '../shared/components/RoleGuard';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
+import { AdminDeletedUsersPage } from '../features/admin/AdminDeletedUsersPage';
+import { AdminUsersPage } from '../features/admin/AdminUsersPage';
 import { AdminBookingsPage } from '../features/bookings/AdminBookingsPage';
 import { BookingDetailPage } from '../features/bookings/BookingDetailPage';
 import { BookingListPage } from '../features/bookings/BookingListPage';
@@ -32,7 +34,12 @@ export const router = createBrowserRouter([
           },
           {
             element: <RoleGuard roles={['ADMIN']} />,
-            children: [{ path: '/admin/bookings', element: <AdminBookingsPage /> }],
+            children: [
+              { path: '/admin/bookings', element: <AdminBookingsPage /> },
+              { path: '/admin/customers', element: <AdminUsersPage role="CUSTOMER" /> },
+              { path: '/admin/staff', element: <AdminUsersPage role="STAFF" /> },
+              { path: '/admin/deleted-users', element: <AdminDeletedUsersPage /> },
+            ],
           },
           {
             element: <RoleGuard roles={['STAFF']} />,

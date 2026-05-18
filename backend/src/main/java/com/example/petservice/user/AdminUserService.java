@@ -4,12 +4,13 @@ import com.example.petservice.booking.BookingRepository;
 import com.example.petservice.booking.BookingStatus;
 import com.example.petservice.common.BadRequestException;
 import com.example.petservice.common.NotFoundException;
-import com.example.petservice.pet.PetRepository;
 import com.example.petservice.user.AdminUserDtos.AdminUserResponse;
 import com.example.petservice.user.AdminUserDtos.CreateAdminUserRequest;
+import com.example.petservice.user.AdminUserDtos.DeletedAdminUserResponse;
 import com.example.petservice.user.AdminUserDtos.UpdateAdminUserRequest;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,20 +18,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminUserService {
   private final UserRepository users;
-  private final PetRepository pets;
   private final BookingRepository bookings;
   private final PasswordEncoder passwordEncoder;
+  private final JdbcTemplate jdbcTemplate;
 
   public AdminUserService(
       UserRepository users,
-      PetRepository pets,
       BookingRepository bookings,
-      PasswordEncoder passwordEncoder
+      PasswordEncoder passwordEncoder,
+      JdbcTemplate jdbcTemplate
   ) {
     this.users = users;
-    this.pets = pets;
     this.bookings = bookings;
     this.passwordEncoder = passwordEncoder;
+    this.jdbcTemplate = jdbcTemplate;
   }
 
   @Transactional(readOnly = true)
@@ -43,6 +44,33 @@ public class AdminUserService {
         .sorted(Comparator.comparing(User::getCreatedAt).reversed())
         .map(this::toResponse)
         .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<DeletedAdminUserResponse> listDeleted() {
+    return jdbcTemplate.query(
+        """
+            select id, full_name, email, role, created_at, updated_at, deleted_at
+            from users
+            where deleted_at is not null
+              and role in ('CUSTOMER', 'STAFF')
+            order by deleted_at desc
+            """,
+        (rs, rowNum) -> new DeletedAdminUserResponse(
+            rs.getLong("id"),
+            rs.getString("full_name"),
+            rs.getString("email"),
+            Role.valueOf(rs.getString("role")),
+            rs.getObject("created_at", java.time.OffsetDateTime.class),
+            rs.getObject("updated_at", java.time.OffsetDateTime.class),
+            rs.getObject("deleted_at", java.time.OffsetDateTime.class)
+        )
+    );
+  }
+
+  @Transactional(readOnly = true)
+  public AdminUserResponse get(Long id) {
+    return toResponse(findManagedUser(id));
   }
 
   @Transactional
@@ -82,15 +110,19 @@ public class AdminUserService {
   @Transactional
   public void delete(Long id) {
     User user = findManagedUser(id);
-    if (user.getRole() == Role.CUSTOMER
-        && (pets.existsByOwnerId(id) || bookings.existsByCustomerId(id))) {
-      throw new BadRequestException("Cannot delete a customer with pets or bookings");
-    }
     if (user.getRole() == Role.STAFF
         && bookings.existsByAssignedStaffIdAndStatusIn(id, List.of(BookingStatus.PENDING, BookingStatus.ASSIGNED))) {
       throw new BadRequestException("Cannot delete a staff member assigned to active bookings");
     }
     users.delete(user);
+  }
+
+  @Transactional
+  public void restore(Long id) {
+    int restoredRows = users.restoreManagedUserById(id);
+    if (restoredRows == 0) {
+      throw new NotFoundException("Deleted user not found");
+    }
   }
 
   private User findManagedUser(Long id) {
@@ -118,4 +150,5 @@ public class AdminUserService {
         user.getCreatedAt()
     );
   }
+
 }

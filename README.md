@@ -1,12 +1,12 @@
 # Pet Service Booking Management System MVP
 
-Production-style 8-hour MVP skeleton for a pet grooming booking system.
+Production-style MVP for a pet grooming booking system with role-based customer, staff, and admin workflows.
 
 ## Stack
 
 - Frontend: React, TypeScript, Vite, React Router, Axios, TanStack Query, React Hook Form, Zod, TailwindCSS
 - Backend: Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security, PostgreSQL, Lombok, Validation, Flyway
-- Database: PostgreSQL via Docker Compose
+- Database: PostgreSQL via Docker Compose, Flyway migrations
 
 ## Project Structure
 
@@ -37,23 +37,25 @@ pet-service-booking/
 
 ## Setup
 
-### 1. Start PostgreSQL
+### 1. Start PostgreSQL and pgAdmin
 
 ```bash
 cd pet-service-booking
 docker compose up -d
 ```
 
+PostgreSQL is exposed on `localhost:5433`.
+pgAdmin is available at `http://localhost:5051`.
+
+Default pgAdmin login:
+
+- Email: `admin@admin.com`
+- Password: `admin`
+
 ### 2. Run Backend
 
 ```bash
 cd backend
-./mvnw spring-boot:run
-```
-
-If Maven Wrapper is not available locally:
-
-```bash
 mvn spring-boot:run
 ```
 
@@ -69,6 +71,18 @@ npm run dev
 
 The app runs at `http://localhost:5173`.
 
+### 4. Run Checks
+
+```bash
+cd backend
+mvn test
+```
+
+```bash
+cd frontend
+npm run build
+```
+
 ## Sample Accounts
 
 All sample accounts use password `Password123!`.
@@ -78,6 +92,8 @@ All sample accounts use password `Password123!`.
 | CUSTOMER | `customer@example.com` |
 | STAFF | `staff@example.com` |
 | ADMIN | `admin@example.com` |
+
+Additional sample staff and customer accounts are seeded by Flyway migrations. They also use `Password123!`.
 
 ## API Overview
 
@@ -94,6 +110,7 @@ Bookings:
 - `GET /api/bookings/{id}`
 - `PATCH /api/bookings/{id}/assign`
 - `PATCH /api/bookings/{id}/status`
+- `DELETE /api/bookings/{id}`
 
 Pets:
 
@@ -111,18 +128,63 @@ Staff:
 
 - `GET /api/staff`
 
+Admin users:
+
+- `GET /api/admin/users?role=CUSTOMER`
+- `GET /api/admin/users?role=STAFF`
+- `POST /api/admin/users`
+- `PUT /api/admin/users/{id}`
+- `DELETE /api/admin/users/{id}`
+- `GET /api/admin/users/deleted`
+- `PATCH /api/admin/users/{id}/restore`
+
 ## Authorization Rules
 
-- `CUSTOMER` users can create bookings for their own pets and view their own bookings.
-- `STAFF` users can view assigned bookings and update assigned booking status.
-- `ADMIN` users can view all bookings and assign staff.
+- `CUSTOMER` users can manage their own pets, upload pet photos, create bookings for their own pets, view their own bookings, and cancel their own active bookings.
+- `STAFF` users can view bookings assigned to them and mark assigned bookings as `COMPLETED` or `CANCELLED`.
+- `ADMIN` users can view all bookings, assign staff, and manage customer/staff accounts.
+- `ADMIN` users can list deleted customer/staff accounts and restore them.
+- `ADMIN` accounts cannot be created through public registration and cannot be deleted through normal admin user CRUD.
 - Role restrictions are enforced server-side. Frontend route guards only improve UX.
+
+## Delete Behavior
+
+The system uses soft delete for important business records.
+
+- `deleted_at IS NULL` means active.
+- `deleted_at IS NOT NULL` means soft deleted.
+- Normal list/get APIs exclude soft-deleted rows.
+- Accessing a soft-deleted record by ID returns `404`.
+- Soft-deleted users cannot login.
+- Restored users can login again with their existing password.
+
+Rules:
+
+- Users are always soft-deleted in normal API flows.
+- Staff cannot be deleted while they have active `PENDING` or `ASSIGNED` bookings.
+- Bookings are always soft-deleted.
+- Pets with booking history are soft-deleted.
+- Pets without booking history are hard-deleted.
+- Pet photo files are physically deleted when a pet is deleted or a photo is replaced. File cleanup is best-effort and does not rollback database changes.
+
+## Postman
+
+Import `postman_collection.json` to test the API.
+
+Recommended flow:
+
+1. Run `Auth > Login - Admin`, `Login - Customer`, or `Login - Staff` to set the collection bearer token.
+2. Use the `Pets`, `Bookings`, `Staff`, and `Admin Users` folders.
+3. For pet photo upload, choose a local image file in the `file` form-data field.
 
 ## Implemented
 
 - JWT authentication with Spring Security
 - Layered backend packages with controllers, services, repositories, DTOs, mappers, and entities
 - Flyway migrations for schema and sample data
+- Soft delete for users, pets, and bookings
+- Customer pet CRUD and pet photo upload
+- Admin customer and staff CRUD
 - Global exception handling with clean JSON errors
 - React route protection and role guards
 - Axios auth interceptor

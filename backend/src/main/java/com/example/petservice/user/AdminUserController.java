@@ -2,6 +2,7 @@ package com.example.petservice.user;
 
 import com.example.petservice.user.AdminUserDtos.AdminUserResponse;
 import com.example.petservice.user.AdminUserDtos.CreateAdminUserRequest;
+import com.example.petservice.user.AdminUserDtos.DeletedAdminUserResponse;
 import com.example.petservice.user.AdminUserDtos.UpdateAdminUserRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,11 @@ public class AdminUserController {
     return adminUserService.list(role);
   }
 
+  @GetMapping("/deleted")
+  List<DeletedAdminUserResponse> listDeleted() {
+    return adminUserService.listDeleted();
+  }
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   AdminUserResponse create(@Valid @RequestBody CreateAdminUserRequest request) {
@@ -48,5 +55,11 @@ public class AdminUserController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void delete(@PathVariable Long id) {
     adminUserService.delete(id);
+  }
+
+  @PatchMapping("/{id}/restore")
+  AdminUserResponse restore(@PathVariable Long id) {
+    adminUserService.restore(id);
+    return adminUserService.get(id);
   }
 }

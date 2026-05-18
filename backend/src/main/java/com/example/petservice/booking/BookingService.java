@@ -125,6 +125,15 @@ public class BookingService {
     return mapper.toResponse(booking);
   }
 
+  @Transactional
+  public void delete(CurrentUser currentUser, Long id) {
+    Booking booking = bookings.findById(id).orElseThrow(() -> new NotFoundException("Booking not found"));
+    if (currentUser.role() != Role.ADMIN) {
+      requireVisible(currentUser, booking);
+    }
+    bookings.delete(booking);
+  }
+
   private void requireVisible(CurrentUser currentUser, Booking booking) {
     boolean visible = switch (currentUser.role()) {
       case ADMIN -> true;

@@ -9,11 +9,14 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PetPhotoStorageService {
+  private static final Logger log = LoggerFactory.getLogger(PetPhotoStorageService.class);
   private static final Map<String, String> EXTENSIONS_BY_CONTENT_TYPE = Map.of(
       "image/jpeg", ".jpg",
       "image/png", ".png",
@@ -68,8 +71,8 @@ public class PetPhotoStorageService {
 
     try {
       Files.deleteIfExists(file);
-    } catch (IOException ignored) {
-      // The database should not be blocked by a best-effort local file cleanup.
+    } catch (IOException ex) {
+      log.warn("Could not delete pet photo file {}", file, ex);
     }
   }
 }

@@ -17,6 +17,16 @@ public final class AdminUserDtos {
       OffsetDateTime createdAt
   ) {}
 
+  public record DeletedAdminUserResponse(
+      Long id,
+      String fullName,
+      String email,
+      Role role,
+      OffsetDateTime createdAt,
+      OffsetDateTime updatedAt,
+      OffsetDateTime deletedAt
+  ) {}
+
   public record CreateAdminUserRequest(
       @NotBlank @Size(max = 120) String fullName,
       @NotBlank @Email @Size(max = 160) String email,
