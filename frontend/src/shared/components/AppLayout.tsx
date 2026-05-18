@@ -1,4 +1,4 @@
-import { CalendarDays, LogOut, Plus, Scissors, Users } from 'lucide-react';
+import { CalendarDays, LogOut, PawPrint, Plus, Scissors, Users } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { queryClient } from '../../app/queryClient';
 import { logout } from '../../features/auth/authApi';
@@ -42,10 +42,16 @@ export function AppLayout() {
             My Bookings
           </NavLink>
           {user?.role === 'CUSTOMER' ? (
-            <NavLink className={linkClass} to="/bookings/new">
-              <Plus className="h-4 w-4" />
-              New Booking
-            </NavLink>
+            <>
+              <NavLink className={linkClass} to="/bookings/new">
+                <Plus className="h-4 w-4" />
+                New Booking
+              </NavLink>
+              <NavLink className={linkClass} to="/pets">
+                <PawPrint className="h-4 w-4" />
+                My Pets
+              </NavLink>
+            </>
           ) : null}
           {user?.role === 'ADMIN' ? (
             <NavLink className={linkClass} to="/admin/bookings">

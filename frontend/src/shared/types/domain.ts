@@ -22,6 +22,7 @@ export interface PetResponse {
   breed?: string | null;
   weightKg: number;
   notes?: string | null;
+  photoUrl?: string | null;
 }
 
 export interface ServiceCatalogResponse {

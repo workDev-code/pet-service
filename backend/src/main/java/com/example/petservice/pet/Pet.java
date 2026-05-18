@@ -40,4 +40,7 @@ public class Pet {
 
   @Column(columnDefinition = "text")
   private String notes;
+
+  @Column(columnDefinition = "text")
+  private String photoUrl;
 }

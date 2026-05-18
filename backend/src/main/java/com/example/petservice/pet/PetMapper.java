@@ -13,7 +13,8 @@ public class PetMapper {
         pet.getSpecies(),
         pet.getBreed(),
         pet.getWeightKg(),
-        pet.getNotes()
+        pet.getNotes(),
+        pet.getPhotoUrl()
     );
   }
 }

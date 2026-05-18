@@ -99,6 +99,9 @@ Pets:
 
 - `POST /api/pets`
 - `GET /api/pets`
+- `PUT /api/pets/{id}`
+- `DELETE /api/pets/{id}`
+- `POST /api/pets/{id}/photo`
 
 Services:
 
@@ -148,6 +151,7 @@ Backend:
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MINUTES`
 - `CORS_ALLOWED_ORIGINS`
+- `PET_PHOTOS_DIR`, defaults to `uploads/pets`
 
 Frontend:
 

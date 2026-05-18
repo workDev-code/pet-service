@@ -7,14 +7,20 @@ services:
       POSTGRES_USER: pet_service
       POSTGRES_PASSWORD: pet_service
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pet_service -d pet_service"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pet-service-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:

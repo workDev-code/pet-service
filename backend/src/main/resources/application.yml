@@ -4,8 +4,12 @@ server:
 spring:
   application:
     name: pet-service-booking
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/pet_service}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/pet_service}
     username: ${DB_USERNAME:pet_service}
     password: ${DB_PASSWORD:pet_service}
   jpa:
@@ -24,3 +28,5 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  uploads:
+    pet-photos-dir: ${PET_PHOTOS_DIR:uploads/pets}

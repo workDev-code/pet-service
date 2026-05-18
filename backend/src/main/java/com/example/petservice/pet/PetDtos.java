@@ -17,6 +17,14 @@ public final class PetDtos {
       @Size(max = 1000) String notes
   ) {}
 
+  public record UpdatePetRequest(
+      @NotBlank @Size(max = 80) String name,
+      @NotBlank @Size(max = 60) String species,
+      @Size(max = 80) String breed,
+      @NotNull @DecimalMin("0.10") BigDecimal weightKg,
+      @Size(max = 1000) String notes
+  ) {}
+
   public record PetResponse(
       Long id,
       Long ownerId,
@@ -24,6 +32,7 @@ public final class PetDtos {
       String species,
       String breed,
       BigDecimal weightKg,
-      String notes
+      String notes,
+      String photoUrl
   ) {}
 }

@@ -2,10 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { queryClient } from '../../app/queryClient';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
+import { AuthResponse, Role } from '../../shared/types/domain';
 import { login } from './authApi';
 
 const schema = z.object({
@@ -15,15 +17,41 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+type LoginLocationState = {
+  from?: {
+    pathname?: string;
+  };
+};
+
+function getRoleHomePath(role: Role) {
+  if (role === 'ADMIN') {
+    return '/admin/bookings';
+  }
+
+  if (role === 'STAFF') {
+    return '/staff/bookings';
+  }
+
+  return '/bookings';
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: 'customer@example.com', password: 'Password123!' },
   });
   const mutation = useMutation({
     mutationFn: login,
-    onSuccess: () => navigate('/bookings'),
+    onSuccess: (auth: AuthResponse) => {
+      queryClient.setQueryData(['me'], auth.user);
+      queryClient.removeQueries({ queryKey: ['bookings'] });
+
+      const state = location.state as LoginLocationState | null;
+      const returnPath = state?.from?.pathname;
+      navigate(returnPath ?? getRoleHomePath(auth.user.role), { replace: true });
+    },
   });
 
   return (

@@ -9,4 +9,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   List<Booking> findByAssignedStaffIdOrderByScheduledAtDesc(Long staffId);
 
   List<Booking> findAllByOrderByScheduledAtDesc();
+
+  boolean existsByPetId(Long petId);
 }

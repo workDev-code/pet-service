@@ -9,6 +9,7 @@ import { BookingDetailPage } from '../features/bookings/BookingDetailPage';
 import { BookingListPage } from '../features/bookings/BookingListPage';
 import { CreateBookingPage } from '../features/bookings/CreateBookingPage';
 import { StaffBookingsPage } from '../features/bookings/StaffBookingsPage';
+import { PetsPage } from '../features/pets/PetsPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/bookings" replace /> },
@@ -24,7 +25,10 @@ export const router = createBrowserRouter([
           { path: '/bookings/:id', element: <BookingDetailPage /> },
           {
             element: <RoleGuard roles={['CUSTOMER']} />,
-            children: [{ path: '/bookings/new', element: <CreateBookingPage /> }],
+            children: [
+              { path: '/bookings/new', element: <CreateBookingPage /> },
+              { path: '/pets', element: <PetsPage /> },
+            ],
           },
           {
             element: <RoleGuard roles={['ADMIN']} />,

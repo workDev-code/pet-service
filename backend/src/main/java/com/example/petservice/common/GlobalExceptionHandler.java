@@ -4,9 +4,13 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,6 +27,16 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BadRequestException.class)
   ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
     return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+  }
+
+  @ExceptionHandler({
+      MaxUploadSizeExceededException.class,
+      MissingServletRequestParameterException.class,
+      MissingServletRequestPartException.class,
+      MultipartException.class
+  })
+  ResponseEntity<ApiError> handleMultipart(Exception ex) {
+    return build(HttpStatus.BAD_REQUEST, "Invalid upload request");
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

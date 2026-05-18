@@ -46,3 +46,4 @@ postgres_data/
 # Runtime temp files
 tmp/
 temp/
+uploads/
