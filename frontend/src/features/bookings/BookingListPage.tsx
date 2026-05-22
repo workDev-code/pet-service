@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { DataTable } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { BookingResponse } from '../../shared/types/domain';
-import { formatDateTime } from '../../shared/utils/format';
+import { BookingSchedule } from './BookingSchedule';
 import { listBookings } from './bookingsApi';
 
 export function BookingListPage() {
@@ -30,7 +30,7 @@ export function BookingTable({ bookings }: { bookings: BookingResponse[] }) {
         { key: 'id', header: 'ID', render: (row) => <Link className="font-medium text-brand-700" to={`/bookings/${row.id}`}>#{row.id}</Link> },
         { key: 'pet', header: 'Pet', render: (row) => row.pet.name },
         { key: 'service', header: 'Service', render: (row) => row.service.name },
-        { key: 'scheduledAt', header: 'Scheduled', render: (row) => formatDateTime(row.scheduledAt) },
+        { key: 'schedule', header: 'Schedule', render: (row) => <BookingSchedule booking={row} /> },
         { key: 'staff', header: 'Staff', render: (row) => row.assignedStaff?.fullName ?? 'Unassigned' },
         { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
       ]}

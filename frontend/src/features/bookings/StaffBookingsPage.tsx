@@ -4,7 +4,7 @@ import { Button } from '../../shared/components/Button';
 import { DataTable } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { BookingResponse, BookingStatus } from '../../shared/types/domain';
-import { formatDateTime } from '../../shared/utils/format';
+import { BookingSchedule } from './BookingSchedule';
 import { listBookings, updateBookingStatus } from './bookingsApi';
 
 export function StaffBookingsPage() {
@@ -28,7 +28,7 @@ export function StaffBookingsPage() {
             { key: 'customer', header: 'Customer', render: (row) => row.customer.fullName },
             { key: 'pet', header: 'Pet', render: (row) => `${row.pet.name} (${row.pet.species})` },
             { key: 'service', header: 'Service', render: (row) => row.service.name },
-            { key: 'scheduled', header: 'Scheduled', render: (row) => formatDateTime(row.scheduledAt) },
+            { key: 'schedule', header: 'Schedule', render: (row) => <BookingSchedule booking={row} /> },
             { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
             {
               key: 'actions',

@@ -6,8 +6,8 @@ import { DataTable } from '../../shared/components/DataTable';
 import { Select } from '../../shared/components/Select';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { BookingResponse } from '../../shared/types/domain';
-import { formatDateTime } from '../../shared/utils/format';
 import { listStaff } from '../staff/staffApi';
+import { BookingSchedule } from './BookingSchedule';
 import { assignBooking, listBookings } from './bookingsApi';
 
 export function AdminBookingsPage() {
@@ -38,7 +38,7 @@ export function AdminBookingsPage() {
             { key: 'id', header: 'ID', render: (row) => `#${row.id}` },
             { key: 'customer', header: 'Customer', render: (row) => row.customer.fullName },
             { key: 'pet', header: 'Pet', render: (row) => row.pet.name },
-            { key: 'scheduled', header: 'Scheduled', render: (row) => formatDateTime(row.scheduledAt) },
+            { key: 'schedule', header: 'Schedule', render: (row) => <BookingSchedule booking={row} /> },
             { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
             {
               key: 'assign',

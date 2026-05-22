@@ -5,7 +5,8 @@ import { Button } from '../../shared/components/Button';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { useCurrentUser } from '../../shared/hooks/useCurrentUser';
 import { BookingStatus } from '../../shared/types/domain';
-import { formatCurrency, formatDateTime } from '../../shared/utils/format';
+import { formatCurrency } from '../../shared/utils/format';
+import { BookingScheduleTimeline } from './BookingSchedule';
 import { getBooking, updateBookingStatus } from './bookingsApi';
 
 export function BookingDetailPage() {
@@ -40,10 +41,12 @@ export function BookingDetailPage() {
           </div>
           <StatusBadge status={booking.status} />
         </div>
+        <div className="mb-5">
+          <BookingScheduleTimeline booking={booking} />
+        </div>
         <dl className="grid gap-3 text-sm md:grid-cols-2">
           <Detail label="Customer" value={booking.customer.fullName} />
           <Detail label="Staff" value={booking.assignedStaff?.fullName ?? 'Unassigned'} />
-          <Detail label="Scheduled" value={formatDateTime(booking.scheduledAt)} />
           <Detail label="Price" value={formatCurrency(booking.service.price)} />
           <Detail label="Address" value={booking.address} />
           <Detail label="Notes" value={booking.notes ?? 'None'} />

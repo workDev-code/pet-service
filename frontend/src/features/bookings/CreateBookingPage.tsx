@@ -8,6 +8,7 @@ import { Input } from '../../shared/components/Input';
 import { Select } from '../../shared/components/Select';
 import { formatCurrency } from '../../shared/utils/format';
 import { listPets } from '../pets/petsApi';
+import { BookingScheduleTimeline } from './BookingSchedule';
 import { createBooking } from './bookingsApi';
 import { listServices } from './servicesApi';
 
@@ -40,6 +41,14 @@ export function CreateBookingPage() {
     }),
     onSuccess: (booking) => navigate(`/bookings/${booking.id}`),
   });
+  const selectedServiceId = form.watch('serviceId');
+  const scheduledAt = form.watch('scheduledAt');
+  const selectedService = services.find((service) => service.id === selectedServiceId);
+  const previewStart = scheduledAt ? new Date(scheduledAt) : null;
+  const schedulePreview = selectedService && previewStart && Number.isFinite(previewStart.getTime()) ? {
+    scheduledAt: previewStart.toISOString(),
+    service: selectedService,
+  } : null;
 
   return (
     <section className="max-w-2xl">
@@ -76,6 +85,11 @@ export function CreateBookingPage() {
           ))}
         </Select>
         <Input label="Scheduled at" type="datetime-local" error={form.formState.errors.scheduledAt?.message} {...form.register('scheduledAt')} />
+        {schedulePreview ? (
+          <div className="rounded-md border border-brand-100 bg-brand-50 p-3">
+            <BookingScheduleTimeline booking={schedulePreview} />
+          </div>
+        ) : null}
         <Input label="Address" error={form.formState.errors.address?.message} {...form.register('address')} />
         <Input label="Notes" error={form.formState.errors.notes?.message} {...form.register('notes')} />
         {mutation.error ? <p className="text-sm text-rose-600">Could not create booking.</p> : null}

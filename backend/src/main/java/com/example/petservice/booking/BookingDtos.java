@@ -1,6 +1,5 @@
 package com.example.petservice.booking;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -13,7 +12,7 @@ public final class BookingDtos {
   public record CreateBookingRequest(
       @NotNull Long petId,
       @NotNull Long serviceId,
-      @NotNull @Future OffsetDateTime scheduledAt,
+      @NotBlank String scheduledAt,
       @NotBlank @Size(max = 1000) String address,
       @Size(max = 1000) String notes
   ) {}

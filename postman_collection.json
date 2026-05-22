@@ -446,11 +446,16 @@
             {
               "listen": "prerequest",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "const scheduledAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();",
-                  "pm.collectionVariables.set('scheduledAt', scheduledAt);"
-                ],
-                "type": "text/javascript"
+                  "const tomorrow = new Date();",
+                  "tomorrow.setDate(tomorrow.getDate() + 1);",
+                  "tomorrow.setHours(10, 0, 0, 0);",
+                  "const pad = (value) => String(value).padStart(2, '0');",
+                  "const scheduledAt = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:${pad(tomorrow.getMinutes())}:${pad(tomorrow.getSeconds())}`;",
+                  "pm.collectionVariables.set('scheduledAt', scheduledAt);",
+                  "console.log('scheduledAt prepared:', scheduledAt);"
+                ]
               }
             },
             {
@@ -1016,6 +1021,205 @@
           }
         }
       ]
+    },
+    {
+      "name": "Duplicate Booking Tests",
+      "description": "Spam POST /bookings to detect duplicate booking inserts. Run Login - Customer first or set token manually.",
+      "item": [
+        {
+          "name": "Spam create booking 3 times",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tomorrow = new Date();",
+                  "tomorrow.setDate(tomorrow.getDate() + 1);",
+                  "tomorrow.setHours(10, 0, 0, 0);",
+                  "const pad = (value) => String(value).padStart(2, '0');",
+                  "const scheduledAt = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:${pad(tomorrow.getMinutes())}:${pad(tomorrow.getSeconds())}`;",
+                  "pm.collectionVariables.set('scheduledAt', scheduledAt);",
+                  "console.log('scheduledAt prepared:', scheduledAt);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const payload = {",
+                  "  petId: Number(pm.collectionVariables.get('petId')),",
+                  "  serviceId: Number(pm.collectionVariables.get('serviceId')),",
+                  "  scheduledAt: pm.collectionVariables.get('scheduledAt'),",
+                  "  address: '123 Paw Street',",
+                  "  notes: 'Please call on arrival'",
+                  "};",
+                  "",
+                  "function logResponse(requestNumber, response) {",
+                  "  console.log(`Request #${requestNumber}`);",
+                  "  console.log('Status code:', response.code);",
+                  "  console.log('Response body:', response.text());",
+                  "}",
+                  "",
+                  "logResponse(1, pm.response);",
+                  "",
+                  "for (let i = 2; i <= 3; i += 1) {",
+                  "  const headers = {",
+                  "    'Content-Type': 'application/json',",
+                  "    Authorization: `Bearer ${pm.collectionVariables.get('token')}`",
+                  "  };",
+                  "",
+                  "  pm.sendRequest({",
+                  "    url: `${pm.collectionVariables.get('baseUrl')}/bookings`,",
+                  "    method: 'POST',",
+                  "    header: headers,",
+                  "    body: {",
+                  "      mode: 'raw',",
+                  "      raw: JSON.stringify(payload)",
+                  "    }",
+                  "  }, function (err, response) {",
+                  "    if (err) {",
+                  "      console.log(`Request #${i}`);",
+                  "      console.log('Error:', err);",
+                  "      return;",
+                  "    }",
+                  "",
+                  "    logResponse(i, response);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"serviceId\": {{serviceId}},\n  \"scheduledAt\": \"{{scheduledAt}}\",\n  \"address\": \"123 Paw Street\",\n  \"notes\": \"Please call on arrival\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Spam create booking 3 times - same Idempotency-Key",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tomorrow = new Date();",
+                  "tomorrow.setDate(tomorrow.getDate() + 1);",
+                  "tomorrow.setHours(10, 0, 0, 0);",
+                  "const pad = (value) => String(value).padStart(2, '0');",
+                  "const scheduledAt = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:${pad(tomorrow.getMinutes())}:${pad(tomorrow.getSeconds())}`;",
+                  "pm.collectionVariables.set('scheduledAt', scheduledAt);",
+                  "console.log('scheduledAt prepared:', scheduledAt);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const payload = {",
+                  "  petId: Number(pm.collectionVariables.get('petId')),",
+                  "  serviceId: Number(pm.collectionVariables.get('serviceId')),",
+                  "  scheduledAt: pm.collectionVariables.get('scheduledAt'),",
+                  "  address: '123 Paw Street',",
+                  "  notes: 'Please call on arrival'",
+                  "};",
+                  "",
+                  "function logResponse(requestNumber, response) {",
+                  "  console.log(`Idempotency request #${requestNumber}`);",
+                  "  console.log('Status code:', response.code);",
+                  "  console.log('Response body:', response.text());",
+                  "}",
+                  "",
+                  "logResponse(1, pm.response);",
+                  "",
+                  "for (let i = 2; i <= 3; i += 1) {",
+                  "  const headers = {",
+                  "    'Content-Type': 'application/json',",
+                  "    Authorization: `Bearer ${pm.collectionVariables.get('token')}`",
+                  "  };",
+                  "  headers['Idempotency-Key'] = 'test-key-123';",
+                  "",
+                  "  pm.sendRequest({",
+                  "    url: `${pm.collectionVariables.get('baseUrl')}/bookings`,",
+                  "    method: 'POST',",
+                  "    header: headers,",
+                  "    body: {",
+                  "      mode: 'raw',",
+                  "      raw: JSON.stringify(payload)",
+                  "    }",
+                  "  }, function (err, response) {",
+                  "    if (err) {",
+                  "      console.log(`Idempotency request #${i}`);",
+                  "      console.log('Error:', err);",
+                  "      return;",
+                  "    }",
+                  "",
+                  "    logResponse(i, response);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "test-key-123"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"serviceId\": {{serviceId}},\n  \"scheduledAt\": \"{{scheduledAt}}\",\n  \"address\": \"123 Paw Street\",\n  \"notes\": \"Please call on arrival\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "auth": {
@@ -1055,7 +1259,7 @@
     },
     {
       "key": "token",
-      "value": ""
+      "value": "your_jwt_token_here"
     },
     {
       "key": "userId",
@@ -1095,7 +1299,7 @@
     },
     {
       "key": "scheduledAt",
-      "value": ""
+      "value": "2026-05-21T10:00:00"
     }
   ]
 }
